@@ -1,6 +1,6 @@
 import asyncio
 import logging
-import concurrent.futures
+from parser import Parser
 
 
 class Server:
@@ -9,7 +9,8 @@ class Server:
         self.static_dir = static_dir
         self.workers = workers
         self.loop = asyncio.get_event_loop()
-        server_gen = asyncio.start_server(self.handle_connection, host=config["host"], port=config["port"], loop=self.loop)
+        server_gen = asyncio.start_server(self.handle_connection, host=config["host"], port=config["port"],
+                                          loop=self.loop)
         self.server = self.loop.run_until_complete(server_gen)
         logging.info('Listening established on {0}'.format(self.server.sockets[0].getsockname()))
         self.start()
@@ -26,20 +27,11 @@ class Server:
     async def handle_connection(self, reader, writer):
         peername = writer.get_extra_info('peername')
         logging.info('Accepted connection from {}'.format(peername))
-        request = []
-        while True:
-            try:
-                data = await asyncio.wait_for(reader.readline(), timeout=1.0)
-                if data:
-                    request.append(data.decode())
-                else:
-                    writer.write("some very important information".encode())
-                    logging.info('Connection from {} closed by peer'.format(peername))
-                    break
-            except concurrent.futures.TimeoutError:
-                logging.info('Connection from {} closed by timeout'.format(peername))
-                break
-        request = ''.join(request)
-        request += "some data"
-        writer.write(request.encode())
+        request = await reader.read(self.config["buffer_size"])
+        response = Parser(request, self.static_dir).parse()
+        try:
+            await writer.write(response)
+        except Exception:
+            pass
         writer.close()
+        logging.info('Finish connection from {}'.format(peername))
