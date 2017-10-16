@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from parser import Parser
+import os
 
 
 class Server:
@@ -13,14 +14,17 @@ class Server:
                                           loop=self.loop)
         self.server = self.loop.run_until_complete(server_gen)
         logging.info('Listening established on {0}'.format(self.server.sockets[0].getsockname()))
+        self.is_parent = True
         self.start()
 
     def start(self):
+
         try:
             self.loop.run_forever()
         except KeyboardInterrupt:
             pass  # Press Ctrl+C to stop
         finally:
+            # self.stop()
             self.server.close()
             self.loop.close()
 
@@ -34,4 +38,9 @@ class Server:
         except Exception:
             pass
         writer.close()
-        logging.info('Finish connection from {}'.format(peername))
+
+    # def stop(self):
+    #     if self.is_parent:
+    #         print('server stopped')
+    #         return
+    #     os._exit(os.EX_OK)
