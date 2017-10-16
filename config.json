@@ -1,5 +1,7 @@
 {
   "host": "127.0.0.1",
-  "port": "8080",
-  "buffer_size": 1000
+  "port": 8080,
+  "num_of_users": 1000,
+  "receive_chunk": 1024,
+  "send_chunk": 1024
 }
