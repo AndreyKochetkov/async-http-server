@@ -1,7 +1,7 @@
 import fire
 import json
 import logging
-
+import os
 from server import Server
 
 
@@ -11,16 +11,10 @@ def main(config_path="/Users/MB-kochetkov/Projects/HTTP_server/config.json",
     logging.info("input: " + config_path + " " + static_dir + " " + str(workers))
     with open(config_path) as json_data:
         config = json.load(json_data)
-    server = Server(config, static_dir, workers)
-    server.start()
-    try:
-        while True:
-            events = server.selector.select()
-            for key, mask in events:
-                callback = key.data
-                callback()
-    except KeyboardInterrupt:
-        server.stop()
+    # for _ in range(workers - 1):
+    #     if not os.fork():
+    #         break
+    Server(config, static_dir, workers)
 
 
 if __name__ == '__main__':
