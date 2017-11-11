@@ -2,6 +2,7 @@ import asyncio
 import logging
 from parser import Parser
 import os
+import socket
 
 
 class Server:
@@ -9,9 +10,19 @@ class Server:
         self.config = config
         self.static_dir = static_dir
         self.workers = workers
+
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket.setblocking(False)
+        self.socket.bind((self.config["host"], self.config["port"]))
+        self.socket.listen(self.workers)
+        for _ in range(self.workers - 1):
+            if not os.fork():
+                self.is_parent = False
+                break
+
         self.loop = asyncio.get_event_loop()
-        server_gen = asyncio.start_server(self.handle_connection, host=config["host"], port=config["port"],
-                                          loop=self.loop)
+        server_gen = asyncio.start_server(self.handle_connection, loop=self.loop, sock=self.socket)
         self.server = self.loop.run_until_complete(server_gen)
         logging.info('Listening established on {0}'.format(self.server.sockets[0].getsockname()))
         self.is_parent = True
@@ -38,9 +49,3 @@ class Server:
         except Exception:
             pass
         writer.close()
-
-    # def stop(self):
-    #     if self.is_parent:
-    #         print('server stopped')
-    #         return
-    #     os._exit(os.EX_OK)
