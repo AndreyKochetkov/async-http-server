@@ -50,7 +50,7 @@ Document Length:        954824 bytes
 
 Concurrency Level:      100
 
-Time taken for tests:   3.436 seconds
+### Time taken for tests:   3.436 seconds
 
 Complete requests:      10000
 
@@ -160,7 +160,7 @@ Document Length:        954824 bytes
 
 Concurrency Level:      100
 
-Time taken for tests:   7.468 seconds
+### Time taken for tests:   7.468 seconds
 
 Complete requests:      10000
 
