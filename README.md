@@ -1,5 +1,4 @@
 # HTTP_server
-Python 3.6, prefork, async
+Python 3.6, prefork, asyncio
 
 
-will be soon here :)
